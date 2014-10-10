@@ -3,6 +3,7 @@ package com.fstrise.androidexample.ListAnimation;
 import java.util.ArrayList;
 
 import android.content.Context;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +15,7 @@ import android.widget.TextView;
 
 import com.fstrise.androidexample.R;
 import com.fstrise.androidexample.model.itemList;
+import com.fstrise.androidexample.utils.Cals;
 
 public class PlusImageAdapter extends GPlusListAdapter {
 	private ArrayList<itemList> aList;
@@ -41,6 +43,11 @@ public class PlusImageAdapter extends GPlusListAdapter {
 			holder = new ViewHolder();
 			holder.txtTitle = (TextView) convertView
 					.findViewById(R.id.txtTitle);
+			holder.imgSample = (ImageView) convertView
+					.findViewById(R.id.imgDemo);
+			holder.imgSample.setLayoutParams(new FrameLayout.LayoutParams(
+					(Cals.w100 * 2 + Cals.w20), (Cals.h100 * 2 + Cals.h80),
+					Gravity.RIGHT));
 			// FrameLayout.LayoutParams lpRowItem = new
 			// FrameLayout.LayoutParams(
 			// LayoutParams.MATCH_PARENT, Cals.h80 * 2);

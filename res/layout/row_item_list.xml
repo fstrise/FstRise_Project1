@@ -20,6 +20,7 @@
     </LinearLayout>
 
     <ImageView
+        android:id="@+id/imgDemo"
         android:layout_width="220dp"
         android:layout_height="280dp"
         android:layout_gravity="right"
