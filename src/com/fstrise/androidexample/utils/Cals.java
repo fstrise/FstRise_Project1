@@ -33,13 +33,43 @@ public class Cals {
 	public static int h120;
 	public static int h45;
 	public static int h80;
-	
+
+	public static int textSize21 = 21;
+	public static int textSize22 = 22;
+	public static int textSize23 = 23;
+	public static int textSize25 = 25;
+	public static int textSize30 = 30;
+	public static int textSize20 = 20;
+	public static int textSize15 = 15;
+	public static int textSize13 = 13;
+	public static int textSize10 = 10;
+	public static int textSize17 = 17;
+	public static int textSize12 = 12;
+	public static int textSize18 = 18;
+	public static int textSize40 = 40;
+	public static int textSize35 = 35;
+	public static int textSize36 = 36;
 
 	public Cals(int width, int height, int mWidth, int mHeight) {
 		if (width > height) {
 			width = mHeight;
 			height = mWidth;
 		}
+		textSize10 = (width * 10) / 720;
+		textSize12 = (width * 12) / 720;
+		textSize13 = (width * 13) / 720;
+		textSize15 = (width * 15) / 720;
+		textSize20 = (width * 20) / 720;
+		textSize21 = (width * 21) / 720;
+		textSize22 = (width * 22) / 720;
+		textSize23 = (width * 23) / 720;
+		textSize25 = (width * 25) / 720;
+		textSize30 = (width * 30) / 720;
+		textSize17 = (width * 17) / 720;
+		textSize18 = (width * 18) / 720;
+		textSize35 = (width * 35) / 720;
+		textSize36 = (width * 36) / 720;
+		textSize40 = (width * 40) / 720;
 		w5 = (int) (0.6944 * width) / 100;
 		w10 = (int) (1.3888 * width) / 100;
 		w20 = (int) (2.7777 * width) / 100;

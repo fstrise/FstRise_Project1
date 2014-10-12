@@ -3,6 +3,8 @@ package com.fstrise.androidexample.ListAnimation;
 import java.util.ArrayList;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,9 +12,12 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.FrameLayout.LayoutParams;
+import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.fstrise.androidexample.MyActivity;
 import com.fstrise.androidexample.R;
 import com.fstrise.androidexample.model.itemList;
 import com.fstrise.androidexample.utils.Cals;
@@ -43,209 +48,83 @@ public class PlusImageAdapter extends GPlusListAdapter {
 			holder = new ViewHolder();
 			holder.txtTitle = (TextView) convertView
 					.findViewById(R.id.txtTitle);
+			holder.txtTitle.setTextSize((float) Cals.textSize20);
+			//
+			holder.txtDescription = (TextView) convertView
+					.findViewById(R.id.txtDes);
+			holder.txtDescription.setTextSize((float) Cals.textSize17);
+			holder.txtDescription
+					.setPadding(Cals.w5, Cals.w5, Cals.w5, Cals.w5);
 			holder.imgSample = (ImageView) convertView
 					.findViewById(R.id.imgDemo);
 			holder.imgSample.setLayoutParams(new FrameLayout.LayoutParams(
 					(Cals.w100 * 2 + Cals.w20), (Cals.h100 * 2 + Cals.h80),
 					Gravity.RIGHT));
-			// FrameLayout.LayoutParams lpRowItem = new
-			// FrameLayout.LayoutParams(
-			// LayoutParams.MATCH_PARENT, Cals.h80 * 2);
-			// lpRowItem.leftMargin = Cals.w10;
-			// lpRowItem.rightMargin = Cals.w10;
-			// holder.layoutRowItem.setLayoutParams(lpRowItem);
-			// //
-			// holder.imgSample = (ImageView) convertView
-			// .findViewById(R.id.imgSample);
-			// LinearLayout.LayoutParams lpImgSamp = new
-			// LinearLayout.LayoutParams(
-			// Cals.w60 * 2, LayoutParams.MATCH_PARENT);
-			// lpImgSamp.leftMargin = Cals.w10;
-			// holder.imgSample.setLayoutParams(lpImgSamp);
-			// //
-			// holder.frameText = (FrameLayout) convertView
-			// .findViewById(R.id.frameText);
-			// LinearLayout.LayoutParams lpFrameText = new
-			// LinearLayout.LayoutParams(
-			// LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-			// lpFrameText.leftMargin = Cals.w20;
-			// holder.frameText.setLayoutParams(lpFrameText);
-			// //
-			// holder.txtTitle = (TextView) convertView
-			// .findViewById(R.id.txtTitle);
-			// //
-			// holder.txtDescription = (TextView) convertView
-			// .findViewById(R.id.txtDescription);
-			// LinearLayout.LayoutParams lpDes = new LinearLayout.LayoutParams(
-			// LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-			// lpDes.rightMargin = Cals.w80;
-			// holder.txtDescription.setLayoutParams(lpDes);
-			// //
-			// holder.btnMore = (ImageButton) convertView
-			// .findViewById(R.id.btnMore);
-			// FrameLayout.LayoutParams lpBtnMore = new
-			// FrameLayout.LayoutParams(
-			// Cals.w80, Cals.h100 + Cals.h10, Gravity.RIGHT);
-			// holder.btnMore.setLayoutParams(lpBtnMore);
-			// //
-			// holder.imgFav = (ImageView)
-			// convertView.findViewById(R.id.imgFav);
-			// FrameLayout.LayoutParams lpimgFav = new FrameLayout.LayoutParams(
-			// Cals.w40, Cals.w40, Gravity.RIGHT | Gravity.BOTTOM);
-			// lpimgFav.rightMargin = Cals.w20;
-			// lpimgFav.bottomMargin = Cals.w10;
-			// holder.imgFav.setLayoutParams(lpimgFav);
-			// //
-			// holder.imgNewUpdate = (ImageView) convertView
-			// .findViewById(R.id.imgNewUpdate);
-			// holder.imgNewUpdate.setLayoutParams(new FrameLayout.LayoutParams(
-			// Cals.w50, Cals.w50));
+			//
+			holder.txtAuthor = (TextView) convertView
+					.findViewById(R.id.txtAuthor);
+			holder.txtAuthor.setTextSize((float) Cals.textSize15);
+			FrameLayout.LayoutParams lptxtA = new FrameLayout.LayoutParams(
+					LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT,
+					Gravity.BOTTOM);
+			lptxtA.leftMargin = Cals.w50;
+			lptxtA.bottomMargin = Cals.w10;
+			holder.txtAuthor.setLayoutParams(lptxtA);
+			//
+			holder.imgAuthor = (ImageView) convertView
+					.findViewById(R.id.imgAuthor);
+			FrameLayout.LayoutParams lpImgA = new FrameLayout.LayoutParams(
+					Cals.w30, Cals.w30, Gravity.BOTTOM);
+			lpImgA.leftMargin = Cals.w10;
+			lpImgA.bottomMargin = Cals.w10;
+			holder.imgAuthor.setLayoutParams(lpImgA);
+			//
+			holder.layoutInfo = (LinearLayout) convertView
+					.findViewById(R.id.layoutInfo);
+			holder.layoutInfo.setLayoutParams(new FrameLayout.LayoutParams(
+					MyActivity.realWidth - (Cals.w100 * 2 + Cals.w20),
+					LayoutParams.WRAP_CONTENT));
 
 			//
 			convertView.setTag(holder);
 		} else {
 			holder = (ViewHolder) convertView.getTag();
 		}
-		final itemList obj = aList.get(position);
+		itemList obj = aList.get(position);
 		holder.txtTitle.setText(obj.getTitle());
-		// Log.i("listview", "Pos: " + position + " -Item: " + obj.getTitle());
-		// holder.txtTitle.setText(obj.getTitle());
-		// String des = obj.getDescription();
-		// if (des.length() > 2)
-		// holder.txtDescription.setText(obj.getDescription());
+		Log.i("PlusImageAdapter", "position: " + position);
+		if (!obj.getImages().equals("")) {
+			MyActivity.DisplayImage(obj.getImages(), holder.imgSample, 10);
+			holder.imgSample.setScaleType(ScaleType.FIT_XY);
+		}
+
 		//
-		// // check fav
-		// if (obj.getIsFavorite() == 1) {
-		// holder.imgFav.setVisibility(View.VISIBLE);
-		// } else {
-		// holder.imgFav.setVisibility(View.GONE);
-		// }
-		// // check isView
-		// if (obj.getIsView() == 1) {
-		// holder.txtTitle.setTypeface(null, Typeface.NORMAL);
-		// } else {
-		// holder.txtTitle.setTypeface(null, Typeface.BOLD);
-		// }
+		if (obj.getDescription().length() > 180) {
+			holder.txtDescription.setText(obj.getDescription()
+					.substring(0, 179) + " ...");
+		} else {
+			holder.txtDescription.setText(obj.getDescription());
+		}
 		//
-		// if (obj.getVersion() > 2
-		// && obj.getVersion() == Integer
-		// .parseInt(QMain.versionLastUpdate)) {
-		// holder.imgNewUpdate.setVisibility(View.VISIBLE);
-		// } else {
-		// holder.imgNewUpdate.setVisibility(View.GONE);
-		// }
-		//
-		// holder.btnMore.setOnClickListener(new OnClickListener() {
-		//
-		// @Override
-		// public void onClick(View view) {
-		// PopupMenuCompat menu = PopupMenuCompat.newInstance(context,
-		// view);
-		// menu.inflate(R.menu.qmain);
-		// if (obj.getIsFavorite() == 0) {
-		// menu.getMenu()
-		// .getItem(2)
-		// .setTitle(
-		// context.getResources().getString(
-		// R.string.addToFavorite));
-		// } else {
-		// menu.getMenu()
-		// .getItem(2)
-		// .setTitle(
-		// context.getResources().getString(
-		// R.string.removeFavorite));
-		// }
-		// menu.setOnMenuItemClickListener(new
-		// PopupMenuCompat.OnMenuItemClickListener() {
-		// @Override
-		// public boolean onMenuItemClick(MenuItem item) {
-		// Toast.makeText(context, item.getTitle(),
-		// Toast.LENGTH_SHORT).show();
-		// if (item.getTitle().equals(
-		// context.getResources().getString(
-		// R.string.viewDemo))) {
-		// Intent i = new Intent(context, DetailActivity.class);
-		// i.putExtra("id", obj.getId());
-		// context.startActivity(i);
-		// qMain.overridePendingTransition(R.anim.open_next,
-		// R.anim.close_main);
-		// MySQLiteHelper mSql = new MySQLiteHelper(context);
-		// obj.setIsView(1);
-		// mSql.isView(obj);
-		// notifyDataSetChanged();
-		// qMain.reloadData();
-		// } else if (item.getTitle().equals(
-		// context.getResources().getString(
-		// R.string.downloadSource))) {
-		// //
-		// qMain.downloadFile("https://github.com/jfeinstein10/SlidingMenu/archive/master.zip");
-		// } else if (item.getTitle().equals(
-		// context.getResources().getString(
-		// R.string.viewOnGithub))) {
-		// Intent browserIntent = new Intent(
-		// Intent.ACTION_VIEW, Uri.parse(obj
-		// .getLinkGithub()));
-		// context.startActivity(browserIntent);
-		// } else if (item.getTitle().equals(
-		// context.getResources().getString(
-		// R.string.addToFavorite))) {
-		// MySQLiteHelper mSql = new MySQLiteHelper(context);
-		//
-		// obj.setIsFavorite(1);
-		// mSql.updateFavorite(obj);
-		// notifyDataSetChanged();
-		//
-		// } else if (item.getTitle().equals(
-		// context.getResources().getString(
-		// R.string.removeFavorite))) {
-		// MySQLiteHelper mSql = new MySQLiteHelper(context);
-		// obj.setIsFavorite(0);
-		// mSql.updateFavorite(obj);
-		// if (QMain.posionItemList == 0) {
-		// qMain.reloadDataFav();
-		// } else {
-		// notifyDataSetChanged();
-		// }
-		//
-		// }
-		//
-		// return true;
-		// }
-		// });
-		//
-		// menu.show();
-		// }
-		// });
-		//
-		// holder.layoutRowItem.setOnClickListener(new OnClickListener() {
-		//
-		// @Override
-		// public void onClick(View arg0) {
-		//
-		// Intent i = new Intent(context, DetailActivity.class);
-		// i.putExtra("id", obj.getId());
-		// context.startActivity(i);
-		// qMain.overridePendingTransition(R.anim.open_next,
-		// R.anim.close_main);
-		// MySQLiteHelper mSql = new MySQLiteHelper(context);
-		// obj.setIsView(1);
-		// mSql.isView(obj);
-		// notifyDataSetChanged();
-		// qMain.reloadData();
-		//
-		// }
-		// });
+		if(obj.getAuthor().equals("")){
+			holder.txtAuthor.setText("Unknown");
+		}else{
+			holder.txtAuthor.setText(obj.getAuthor());
+		}
+		
 		return convertView;
 	}
 
 	static class ViewHolder {
 		ImageView imgSample;
-		ImageView imgFav;
+		ImageView imgAuthor;
 		TextView txtTitle;
 		TextView txtDescription;
+		TextView txtAuthor;
 		ImageButton btnMore;
-		LinearLayout layoutRowItem;
+		LinearLayout layoutInfo;
 		FrameLayout frameText;
 		ImageView imgNewUpdate;
+
 	}
 }

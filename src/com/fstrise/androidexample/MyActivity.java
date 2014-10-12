@@ -1,6 +1,8 @@
 package com.fstrise.androidexample;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 import org.json.JSONArray;
@@ -12,23 +14,33 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.content.Intent;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.util.DisplayMetrics;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ImageView;
 import android.widget.ListView;
 
 import com.androidquery.AQuery;
+import com.androidquery.callback.AjaxStatus;
+import com.androidquery.callback.BitmapAjaxCallback;
+import com.androidquery.callback.ImageOptions;
 import com.androidquery.util.AQUtility;
 import com.fstrise.androidexample.ListAnimation.PlusImageAdapter;
 import com.fstrise.androidexample.ListAnimation.SpeedScrollListener;
 import com.fstrise.androidexample.model.itemList;
+import com.fstrise.androidexample.utils.Cals;
 import com.fstrise.androidexample.utils.Utils;
 
 public class MyActivity extends Activity implements
@@ -46,12 +58,16 @@ public class MyActivity extends Activity implements
 	 */
 	public static AQuery aq;
 	private File cacheDir;
+	public static int realHeight;
+	public static int realWidth;
+
 	private CharSequence mTitle;
 	private String[] navMenu;
 	private SpeedScrollListener listener;
 	public static PlusImageAdapter plusAdapter;
 	public static ListView listv;
 	public static ArrayList<itemList> arList;
+
 	@SuppressLint("NewApi")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -71,12 +87,53 @@ public class MyActivity extends Activity implements
 		getWindowManager().getDefaultDisplay().getMetrics(metrics);
 		DisplayMetrics displayMetrics = Resources.getSystem()
 				.getDisplayMetrics();
-		heightScre = metrics.heightPixels;
-		widthScre = metrics.widthPixels;
-		varWidthScre = (int) (displayMetrics.widthPixels
+		int heightScre = metrics.heightPixels;
+		int widthScre = metrics.widthPixels;
+		int varWidthScre = (int) (displayMetrics.widthPixels
 				/ displayMetrics.density + 0.5);
-		varHeightScree = (int) (displayMetrics.heightPixels
+		int varHeightScree = (int) (displayMetrics.heightPixels
 				/ displayMetrics.density + 0.5);
+		Display display = getWindowManager().getDefaultDisplay();
+		Method mGetRawH = null, mGetRawW = null;
+		try {
+			// For JellyBeans and onward
+			if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN) {
+				display.getRealMetrics(metrics);
+				realHeight = metrics.heightPixels;
+				realWidth = metrics.widthPixels;
+				if (realHeight == 800) {
+					realWidth = widthScre;
+					realHeight = heightScre;
+				}
+				// objCS = new CalScreen(realWidth, realHeight, varWidthScre,
+				// varHeightScree);
+
+			} else {
+				mGetRawH = Display.class.getMethod("getRawHeight");
+				mGetRawW = Display.class.getMethod("getRawWidth");
+
+				try {
+					realHeight = (Integer) mGetRawH.invoke(display);
+					realWidth = (Integer) mGetRawW.invoke(display);
+					if (realHeight == 800) {
+						realWidth = widthScre;
+						realHeight = heightScre;
+					}
+
+				} catch (IllegalArgumentException e) {
+					e.printStackTrace();
+				} catch (IllegalAccessException e) {
+					e.printStackTrace();
+				} catch (InvocationTargetException e) {
+					e.printStackTrace();
+				}
+			}
+
+		} catch (Exception x) {
+
+		}
+		new Cals(realWidth, realHeight, varHeightScree, varWidthScre);
+
 		//
 		setContentView(R.layout.activity_my);
 		navMenu = getResources().getStringArray(R.array.arrMenu);
@@ -181,17 +238,29 @@ public class MyActivity extends Activity implements
 
 	private void loadData(int pos) {
 		try {
-			
+
 			listener = new SpeedScrollListener();
 			plusAdapter = new PlusImageAdapter(MyActivity.this, listener,
 					arList);
 			if (listv != null)
 				listv.setAdapter(plusAdapter);
+			listv.setOnItemClickListener(new OnItemClickListener() {
 
+				@Override
+				public void onItemClick(AdapterView<?> arg0, View arg1,
+						int pos, long arg3) {
+					Intent i = new Intent(MyActivity.this, DetailActivity.class);
+					i.putExtra("pos", pos);
+					startActivity(i);
+					overridePendingTransition(R.anim.open_next,
+							R.anim.close_main);
+				}
+			});
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
 	}
+
 	public class getItemDataL extends AsyncTask<String, Integer, String> {
 		@Override
 		protected void onPreExecute() {
@@ -201,12 +270,12 @@ public class MyActivity extends Activity implements
 		@Override
 		protected String doInBackground(String... params) {
 			String result = "";
-//			if (isUpdate) {
-//				result = Utils.getUrls(Utils.URL_GET_ITEM_UPDATE
-//						+ versionLastUpdate);
-//			} else {
-				result = Utils.getUrls(Utils.URL_GET_ITEM);
-//			}
+			// if (isUpdate) {
+			// result = Utils.getUrls(Utils.URL_GET_ITEM_UPDATE
+			// + versionLastUpdate);
+			// } else {
+			result = Utils.getUrls(Utils.URL_GET_ITEM);
+			// }
 
 			return result;
 		}
@@ -227,25 +296,31 @@ public class MyActivity extends Activity implements
 					e3 = objArr.getJSONObject(i);
 					itemList obj = new itemList();
 					obj.setId(e3.getInt("Id"));
+					obj.setId(e3.getInt("Id_menu"));
 					obj.setTitle(e3.getString("Title"));
 					obj.setDescription(e3.getString("Description"));
 					obj.setAuthor(e3.getString("Author"));
 					obj.setLicense(e3.getString("License"));
-//					obj.setCodeRun(e3.getInt("Coderun"));
-//					obj.setSdkVersion(e3.getString("Sdkversion"));
-//					obj.setLinkGithub(e3.getString("Linkgithub"));
-//					obj.setPackageapk(e3.getString("Packageapk"));
-//					obj.setModerun(e3.getInt("Moderun"));
-//					obj.setApkname(e3.getString("Apkname"));
-//					obj.setType(e3.getInt("Type"));
-//					obj.setVersion(e3.getInt("Version"));
-//					if (version < e3.getInt("Version"))
-//						version = e3.getInt("Version");
-//					MySQLiteHelper mSql = new MySQLiteHelper(QMain.this);
-//					mSql.addItem(obj);
-//					if (isUpdate) {
-//						arListUpdate.add(obj);
-//					}
+					obj.setImages(e3.getString("Images"));
+					obj.setImg_author(e3.getString("Img_author"));
+					obj.setLink(e3.getString("Link"));
+					obj.setVersion(e3.getInt("Version"));
+
+					// obj.setCodeRun(e3.getInt("Coderun"));
+					// obj.setSdkVersion(e3.getString("Sdkversion"));
+					// obj.setLinkGithub(e3.getString("Linkgithub"));
+					// obj.setPackageapk(e3.getString("Packageapk"));
+					// obj.setModerun(e3.getInt("Moderun"));
+					// obj.setApkname(e3.getString("Apkname"));
+					// obj.setType(e3.getInt("Type"));
+					// obj.setVersion(e3.getInt("Version"));
+					// if (version < e3.getInt("Version"))
+					// version = e3.getInt("Version");
+					// MySQLiteHelper mSql = new MySQLiteHelper(QMain.this);
+					// mSql.addItem(obj);
+					// if (isUpdate) {
+					// arListUpdate.add(obj);
+					// }
 					arList.add(obj);
 				}
 			} catch (JSONException e) {
@@ -253,35 +328,87 @@ public class MyActivity extends Activity implements
 				e.printStackTrace();
 			}
 
-//			if (version != 0) {
-//				versionLastUpdate = String.valueOf(version);
-//				Editor edit = preferences.edit();
-//				edit.putString("versionUpdate", versionLastUpdate);
-//				edit.commit();
-//			}
-//			if (isUpdate) {
-//				frameProgressbar.setVisibility(View.GONE);
-//				isUpdate = false;
-//				if (arListUpdate.size() == 0) {
-//					Toast.makeText(QMain.this, "No Data Update", 1).show();
-//				} else {
-//					listener = new SpeedScrollListener();
-//					plusAdapter = new PlusImageAdapter(QMain.this, listener,
-//							arListUpdate);
-//					if (listv != null)
-//						listv.setAdapter(plusAdapter);
-//					Toast.makeText(QMain.this,
-//							arListUpdate.size() + " Item Updated", 1).show();
-//					reloadData();
-//				}
-//			} else {
-//				loadDataByPos(0);
-//			}
+			// if (version != 0) {
+			// versionLastUpdate = String.valueOf(version);
+			// Editor edit = preferences.edit();
+			// edit.putString("versionUpdate", versionLastUpdate);
+			// edit.commit();
+			// }
+			// if (isUpdate) {
+			// frameProgressbar.setVisibility(View.GONE);
+			// isUpdate = false;
+			// if (arListUpdate.size() == 0) {
+			// Toast.makeText(QMain.this, "No Data Update", 1).show();
+			// } else {
+			// listener = new SpeedScrollListener();
+			// plusAdapter = new PlusImageAdapter(QMain.this, listener,
+			// arListUpdate);
+			// if (listv != null)
+			// listv.setAdapter(plusAdapter);
+			// Toast.makeText(QMain.this,
+			// arListUpdate.size() + " Item Updated", 1).show();
+			// reloadData();
+			// }
+			// } else {
+			// loadDataByPos(0);
+			// }
 			loadData(0);
-		
 
 		}
 
 	}
 
+	public static void DisplayImage(final String url,
+			final ImageView imageView, final int type) {
+		File file = aq.getCachedFile(url);
+		if (file != null) {
+
+			if (type == 10) {
+				ImageOptions options = new ImageOptions();
+				options.round = 5;
+				// options.animation = AQuery.FADE_IN;
+				aq.id(imageView).image(url, options);
+			} else if (type == 11) {
+				ImageOptions options = new ImageOptions();
+				options.round = 15;
+				aq.id(imageView).image(url, options);
+			} else {
+				aq.id(imageView).image(file, false, 0,
+						new BitmapAjaxCallback() {
+							@Override
+							public void callback(String url, ImageView iv,
+									Bitmap bm, AjaxStatus status) {
+								iv.setImageBitmap(bm);
+							}
+						});
+			}
+
+		} else {
+			Bitmap placeholder = null;
+			placeholder = aq.getCachedImage(R.drawable.imgdefault);
+			if (type == 10) {
+				ImageOptions options = new ImageOptions();
+				options.round = 5;
+				// options.animation = AQuery.FADE_IN;
+				aq.id(imageView).image(url, options);
+			} else if (type == 11) {
+				ImageOptions options = new ImageOptions();
+				options.round = 15;
+				aq.id(imageView).image(url, options);
+			} else {
+				aq.id(imageView).image(url, true, true, 0, 0,
+						new BitmapAjaxCallback() {
+							@Override
+							public void callback(String url, ImageView iv,
+									Bitmap bm, AjaxStatus status) {
+								iv.setImageBitmap(bm);
+							}
+
+						});
+			}
+
+		}
+		//
+
+	}
 }
