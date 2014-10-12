@@ -45,7 +45,7 @@
             android:id="@+id/txtDes"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-              android:layout_gravity="left"
+            android:layout_gravity="left"
             android:padding="10dp"
             android:text="This is description This is description This is description This is description This is description This is description This is description This is description This is description "
             android:textSize="20dp" />

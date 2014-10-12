@@ -11,6 +11,8 @@ public class itemList {
 	private String link;
 	private int version;
 	private String license;
+	private int isFav;
+	private int isView;
 	public itemList(){}
 	public itemList(String title){
 		this.title = title;
@@ -75,5 +77,17 @@ public class itemList {
 	}
 	public void setId(int id) {
 		this.id = id;
+	}
+	public int getIsFav() {
+		return isFav;
+	}
+	public void setIsFav(int isFav) {
+		this.isFav = isFav;
+	}
+	public int getIsView() {
+		return isView;
+	}
+	public void setIsView(int isView) {
+		this.isView = isView;
 	}
 }

@@ -15,12 +15,18 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.preference.PreferenceManager;
 import android.support.v4.widget.DrawerLayout;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -29,8 +35,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.FrameLayout.LayoutParams;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.androidquery.AQuery;
 import com.androidquery.callback.AjaxStatus;
@@ -40,6 +51,7 @@ import com.androidquery.util.AQUtility;
 import com.fstrise.androidexample.ListAnimation.PlusImageAdapter;
 import com.fstrise.androidexample.ListAnimation.SpeedScrollListener;
 import com.fstrise.androidexample.model.itemList;
+import com.fstrise.androidexample.sqlite.MySQLiteHelper;
 import com.fstrise.androidexample.utils.Cals;
 import com.fstrise.androidexample.utils.Utils;
 
@@ -67,6 +79,11 @@ public class MyActivity extends Activity implements
 	public static PlusImageAdapter plusAdapter;
 	public static ListView listv;
 	public static ArrayList<itemList> arList;
+	public static String versionLastUpdate = "";
+	private SharedPreferences preferences;
+	// private ProgressBar progressBar1;
+	private LinearLayout layoutprogress;
+	private TextView txtLoading;
 
 	@SuppressLint("NewApi")
 	@Override
@@ -82,6 +99,8 @@ public class MyActivity extends Activity implements
 			cacheDir.mkdirs();
 		AQUtility.setCacheDir(cacheDir);
 		aq = new AQuery(this);
+		preferences = PreferenceManager.getDefaultSharedPreferences(this);
+		versionLastUpdate = preferences.getString("versionUpdate", "");
 		//
 		DisplayMetrics metrics = new DisplayMetrics();
 		getWindowManager().getDefaultDisplay().getMetrics(metrics);
@@ -141,10 +160,21 @@ public class MyActivity extends Activity implements
 				.findFragmentById(R.id.navigation_drawer);
 		mTitle = getTitle();
 		listv = (ListView) findViewById(R.id.listv);
+		layoutprogress = (LinearLayout) findViewById(R.id.layoutprogress);
+		txtLoading = (TextView) findViewById(R.id.txtLoading);
+		txtLoading.setTextSize((float) Cals.textSize15);
 		// Set up the drawer.
 		mNavigationDrawerFragment.setUp(R.id.navigation_drawer,
 				(DrawerLayout) findViewById(R.id.drawer_layout));
-		new getItemDataL().execute("");
+		if (versionLastUpdate.equals("")) {
+			new getItemDataL().execute("");
+		} else {
+			// load item favorite
+			MySQLiteHelper mSql = new MySQLiteHelper(this);
+			arList = mSql.getAllItem();
+			loadData(0);
+		}
+
 	}
 
 	@SuppressLint("NewApi")
@@ -160,6 +190,7 @@ public class MyActivity extends Activity implements
 
 	public void onSectionAttached(int number) {
 		mTitle = navMenu[number - 1];
+		loadData(number);
 	}
 
 	@SuppressLint("NewApi")
@@ -189,7 +220,8 @@ public class MyActivity extends Activity implements
 		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
-		if (id == R.id.action_settings) {
+		if (id == R.id.action_example) {
+			Toast.makeText(this, "Fav", 1).show();
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
@@ -238,7 +270,13 @@ public class MyActivity extends Activity implements
 
 	private void loadData(int pos) {
 		try {
+			MySQLiteHelper mSql = new MySQLiteHelper(MyActivity.this);
 
+			if (pos == 0) {
+				arList = mSql.getAllItem();
+			} else {
+				arList = mSql.getAllItem(pos);
+			}
 			listener = new SpeedScrollListener();
 			plusAdapter = new PlusImageAdapter(MyActivity.this, listener,
 					arList);
@@ -261,9 +299,12 @@ public class MyActivity extends Activity implements
 		}
 	}
 
+	private int version = 0;
+
 	public class getItemDataL extends AsyncTask<String, Integer, String> {
 		@Override
 		protected void onPreExecute() {
+			layoutprogress.setVisibility(View.VISIBLE);
 
 		}
 
@@ -281,59 +322,83 @@ public class MyActivity extends Activity implements
 		}
 
 		@Override
-		protected void onPostExecute(String result) {
+		protected void onPostExecute(final String result) {
 			super.onPostExecute(result);
-			JSONObject objOb;
 
 			ArrayList<itemList> arListUpdate = new ArrayList<itemList>();
 			arList = new ArrayList<itemList>();
-			int version = 0;
-			try {
-				objOb = new JSONObject(result);
-				JSONArray objArr = new JSONArray(objOb.getString("rows"));
-				JSONObject e3 = null;
-				for (int i = 0; i < objArr.length(); i++) {
-					e3 = objArr.getJSONObject(i);
-					itemList obj = new itemList();
-					obj.setId(e3.getInt("Id"));
-					obj.setId(e3.getInt("Id_menu"));
-					obj.setTitle(e3.getString("Title"));
-					obj.setDescription(e3.getString("Description"));
-					obj.setAuthor(e3.getString("Author"));
-					obj.setLicense(e3.getString("License"));
-					obj.setImages(e3.getString("Images"));
-					obj.setImg_author(e3.getString("Img_author"));
-					obj.setLink(e3.getString("Link"));
-					obj.setVersion(e3.getInt("Version"));
-
-					// obj.setCodeRun(e3.getInt("Coderun"));
-					// obj.setSdkVersion(e3.getString("Sdkversion"));
-					// obj.setLinkGithub(e3.getString("Linkgithub"));
-					// obj.setPackageapk(e3.getString("Packageapk"));
-					// obj.setModerun(e3.getInt("Moderun"));
-					// obj.setApkname(e3.getString("Apkname"));
-					// obj.setType(e3.getInt("Type"));
-					// obj.setVersion(e3.getInt("Version"));
-					// if (version < e3.getInt("Version"))
-					// version = e3.getInt("Version");
-					// MySQLiteHelper mSql = new MySQLiteHelper(QMain.this);
-					// mSql.addItem(obj);
-					// if (isUpdate) {
-					// arListUpdate.add(obj);
-					// }
-					arList.add(obj);
-				}
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-			// if (version != 0) {
-			// versionLastUpdate = String.valueOf(version);
-			// Editor edit = preferences.edit();
-			// edit.putString("versionUpdate", versionLastUpdate);
-			// edit.commit();
+			// new Thread(new Runnable(
+			// @Override
+			// public void run () {
+			// // Perform long-running task here
+			// // (like audio buffering).
+			// // you may want to update some progress
+			// // bar every second, so use handler:
+			// mHandler.post(new Runnable() {
+			// @Override
+			// public void run () {
+			// // make operation on UI - on example
+			// // on progress bar.
 			// }
+			// });
+			// }
+			// )).start();
+			new Thread(new Runnable() {
+
+				@Override
+				public void run() {
+					mHandler.post(new Runnable() {
+
+						@Override
+						public void run() {
+							try {
+								JSONObject objOb = new JSONObject(result);
+								JSONArray objArr = new JSONArray(objOb
+										.getString("rows"));
+								JSONObject e3 = null;
+
+								for (int i = 0; i < objArr.length(); i++) {
+									e3 = objArr.getJSONObject(i);
+									itemList obj = new itemList();
+									obj.setId(e3.getInt("Id"));
+									obj.setId_menu(e3.getInt("Id_menu"));
+									obj.setTitle(e3.getString("Title"));
+									obj.setDescription(e3
+											.getString("Description"));
+									obj.setAuthor(e3.getString("Author"));
+									obj.setLicense(e3.getString("License"));
+									obj.setImages(e3.getString("Images"));
+									obj.setImg_author(e3
+											.getString("Img_author"));
+									obj.setLink(e3.getString("Link"));
+									obj.setVersion(e3.getInt("Version"));
+
+									if (version < e3.getInt("Version"))
+										version = e3.getInt("Version");
+									MySQLiteHelper mSql = new MySQLiteHelper(
+											MyActivity.this);
+									mSql.addItem(obj);
+									txtLoading.setText("Updating data " + i
+											+ "/" + objArr.length());
+									if (i == objArr.length() - 1) {
+										mHandler.sendMessage(Message.obtain(
+												mHandler, LOAD_FINISH));
+									}
+									// if (isUpdate) {
+									// arListUpdate.add(obj);
+									// }
+
+									// arList.add(obj);
+								}
+							} catch (Exception ex) {
+								ex.printStackTrace();
+							}
+
+						}
+					});
+				}
+			}).start();
+
 			// if (isUpdate) {
 			// frameProgressbar.setVisibility(View.GONE);
 			// isUpdate = false;
@@ -352,11 +417,30 @@ public class MyActivity extends Activity implements
 			// } else {
 			// loadDataByPos(0);
 			// }
-			loadData(0);
 
 		}
-
 	}
+
+	private final static int LOAD_FINISH = 1;
+	@SuppressLint("HandlerLeak")
+	private Handler mHandler = new Handler() {
+		@Override
+		public void handleMessage(Message message) {
+			switch (message.what) {
+			case LOAD_FINISH:
+				if (version != -1) {
+					versionLastUpdate = String.valueOf(version);
+					Editor edit = preferences.edit();
+					edit.putString("versionUpdate", versionLastUpdate);
+					edit.commit();
+
+				}
+				loadData(0);
+				layoutprogress.setVisibility(View.GONE);
+				break;
+			}
+		}
+	};
 
 	public static void DisplayImage(final String url,
 			final ImageView imageView, final int type) {

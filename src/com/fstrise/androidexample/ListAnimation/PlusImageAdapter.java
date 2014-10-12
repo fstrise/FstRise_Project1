@@ -3,6 +3,7 @@ package com.fstrise.androidexample.ListAnimation;
 import java.util.ArrayList;
 
 import android.content.Context;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.view.Gravity;
@@ -99,9 +100,9 @@ public class PlusImageAdapter extends GPlusListAdapter {
 		}
 
 		//
-		if (obj.getDescription().length() > 180) {
+		if (obj.getDescription().length() > 130) {
 			holder.txtDescription.setText(obj.getDescription()
-					.substring(0, 179) + " ...");
+					.substring(0, 129) + " ...");
 		} else {
 			holder.txtDescription.setText(obj.getDescription());
 		}
@@ -111,7 +112,12 @@ public class PlusImageAdapter extends GPlusListAdapter {
 		}else{
 			holder.txtAuthor.setText(obj.getAuthor());
 		}
-		
+		//
+		if(obj.getIsView() == 1){
+			holder.txtTitle.setTypeface(null, Typeface.NORMAL);
+		}else{
+			holder.txtTitle.setTypeface(null, Typeface.BOLD);
+		}
 		return convertView;
 	}
 

@@ -1,7 +1,5 @@
 package com.fstrise.androidexample;
 
-import java.util.ArrayList;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -9,17 +7,22 @@ import org.json.JSONObject;
 import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.ImageView;
+import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.ImageView.ScaleType;
 
 import com.fstrise.androidexample.custom.CircularImageView;
 import com.fstrise.androidexample.custom.IButton;
 import com.fstrise.androidexample.model.itemList;
+import com.fstrise.androidexample.sqlite.MySQLiteHelper;
 import com.fstrise.androidexample.utils.Cals;
 import com.fstrise.androidexample.utils.Utils;
 
@@ -51,25 +54,35 @@ public class DetailActivity extends Activity {
 		imgBGCasi.addShadow();
 		//
 		txtAuthor = (TextView) findViewById(R.id.txtAuthor);
-		txtAuthor.setTextSize((float) Cals.textSize25);
+		txtAuthor.setTextSize((float) Cals.textSize20);
 		//
 		txtExName = (TextView) findViewById(R.id.txtExName);
-		txtExName.setTextSize((float) Cals.textSize25);
+		txtExName.setTextSize((float) Cals.textSize20);
 		txtExName.setPadding(Cals.w10, Cals.w10, Cals.w10, Cals.w10);
 		//
 		txtDes = (TextView) findViewById(R.id.txtDes);
-		txtDes.setTextSize((float) Cals.textSize20);
+		txtDes.setTextSize((float) Cals.textSize15);
 		txtDes.setPadding(Cals.w10, Cals.w10, Cals.w10, Cals.w10);
 		//
 		txtLicense = (TextView) findViewById(R.id.txtLicense);
-		txtLicense.setTextSize((float) Cals.textSize25);
+		txtLicense.setTextSize((float) Cals.textSize20);
 		txtLicense.setPadding(Cals.w10, Cals.w10, Cals.w10, Cals.w10);
 		//
 		txtLink = (TextView) findViewById(R.id.txtLink);
-		txtLink.setTextSize((float) Cals.textSize20);
+		txtLink.setTextSize((float) Cals.textSize15);
 		txtLink.setPadding(Cals.w10, Cals.w10, Cals.w10, Cals.w10);
 		//
 		btnLink = (IButton) findViewById(R.id.btnLink);
+		btnLink.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+
+				Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri
+						.parse(txtLink.getText().toString()));
+				startActivity(browserIntent);
+			}
+		});
 		//
 		imgDemo = (ImageView) findViewById(R.id.imgDemo);
 		imgDemo.setLayoutParams(new LinearLayout.LayoutParams(Cals.w360,
@@ -96,6 +109,8 @@ public class DetailActivity extends Activity {
 			}
 			ActionBar actionBar = getActionBar();
 			actionBar.setTitle(obj.getTitle());
+			MySQLiteHelper mSql = new MySQLiteHelper(DetailActivity.this);
+			mSql.isView(obj);
 			urlAvatar = obj.getImg_author();
 			if (!urlAvatar.equals("")) {
 				new getItemDataL().execute("");
